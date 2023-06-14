@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="./OL_SDK/include-openlayers-local.js"></script>
+    <script src="./libs/gaode.js"></script>
+    <script src="./utils/createDraw.js"></script>
+    <script src="./utils/Point.js"></script>
+    <script src="https://lib.baomitu.com/jquery/2.2.4/jquery.js"></script>
+    <style>
+        .disabled {
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+
+<body>
+    <button onclick="activeDraw()" id="draw">创建画笔</button>
+    <div id="map">
+    </div>
+    <script>
+        var docLayer = new Zondy.Map.Doc("", "City_Line", {
+
+        })
+        var map = new ol.Map({
+            target: "map",
+            layers: [gaode, docLayer],
+            view: new ol.View({
+                projection: 'EPSG:4326',
+                center: [114.30, 30.50],
+                zoom: 4
+            })
+        })
+        /* 1、创建画布 */
+        const source = new ol.source.Vector({
+
+        })
+        const layer = new ol.layer.Vector({
+            source
+        })
+        map.addLayer(layer);
+        function activeDraw() {
+            $("#draw").attr("disabled", true).addClass("disabled")
+            let draw = createDraw({
+                type: "Point",
+            })
+            map.addInteraction(draw);
+            /* 监听画布 */
+            draw.on("drawend", handleDraw)
+        }
+
+        function handleDraw(evt) {
+            map.getInteractions().pop();
+            var position = evt.feature.getGeometry().getCoordinates();
+            var attr = [];
+            var service = {
+                name: "City_Line",
+                layerId: 0
+            }
+            Point.add({
+                position,
+                attr,
+                service,
+                docLayer
+            })
+            $("#draw").attr("disabled", false).removeClass("disabled")
+        }
+    </script>
+</body>
+
+</html>
